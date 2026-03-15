@@ -17,14 +17,16 @@
 # numpy==1.26.4
 # python-dotenv==1.0.1
 # scapy==2.5.0
+
+
 fastapi
 uvicorn[standard]
-pandas
-scikit-learn
+pandas==2.0.3
+scikit-learn==1.3.2
 joblib
 httpx
 python-multipart
 pydantic
-numpy
+numpy==1.24.4
 python-dotenv
 scapy
