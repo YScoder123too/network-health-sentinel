@@ -1,0 +1,19 @@
+# fastapi
+# uvicorn
+# pandas
+# numpy
+# torch
+# google-generativeai
+# python-multipart
+
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pandas==2.2.2
+scikit-learn==1.4.2
+joblib==1.4.2
+google-generativeai==0.7.2
+python-multipart==0.0.9
+pydantic==2.7.1
+numpy==1.26.4
+python-dotenv==1.0.1
+scapy==2.5.0
