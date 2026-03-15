@@ -1326,6 +1326,281 @@
 #         raise HTTPException(422, str(e))
 #     return stats
 
+# from dotenv import load_dotenv
+# load_dotenv()  # must be FIRST — loads GEMINI_API_KEY before any client imports
+
+# import os
+# import io
+# import ipaddress
+# from collections import Counter
+
+# import httpx
+# import pandas as pd
+# from fastapi import FastAPI, UploadFile, File, HTTPException
+# from fastapi.middleware.cors import CORSMiddleware
+# from pydantic import BaseModel
+
+# from app.model import predict_batch, retrain
+# from app.gemini_client import explain_attack
+# from app.live import router as live_router
+# from app.chat import chat_router
+# from app.news import news_router
+# from app.pcap_parser import (
+#     parse_pcap, pcap_df_to_model_input,
+#     enrich_result_with_pcap_meta, PCAPParseError,
+# )
+
+# # ── App ───────────────────────────────────────────────────────────────────────
+
+# app = FastAPI(title="Network Health Sentinel", version="2.2")
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+# # ← routers registered AFTER app is created
+# app.include_router(live_router)
+# app.include_router(chat_router)
+# app.include_router(news_router)
+
+# REQUIRED_CSV_COLS = {"src_ip", "port", "packet_rate", "packet_size"}
+
+
+# # ── IP Geolocation ────────────────────────────────────────────────────────────
+
+# _RFC1918 = [
+#     ipaddress.ip_network("10.0.0.0/8"),
+#     ipaddress.ip_network("172.16.0.0/12"),
+#     ipaddress.ip_network("192.168.0.0/16"),
+#     ipaddress.ip_network("127.0.0.0/8"),
+# ]
+
+# def _is_private(ip_str: str) -> bool:
+#     try:
+#         addr = ipaddress.ip_address(ip_str)
+#         return any(addr in net for net in _RFC1918)
+#     except ValueError:
+#         return True
+
+
+# async def _geolocate(ip: str) -> dict | None:
+#     if _is_private(ip):
+#         return None
+#     try:
+#         async with httpx.AsyncClient(timeout=3.0) as client:
+#             r = await client.get(
+#                 f"http://ip-api.com/json/{ip}?fields=status,country,countryCode,city,isp"
+#             )
+#         data = r.json()
+#         if data.get("status") == "success":
+#             return {
+#                 "country":      data.get("country"),
+#                 "country_code": data.get("countryCode"),
+#                 "city":         data.get("city"),
+#                 "isp":          data.get("isp"),
+#             }
+#     except Exception:
+#         pass
+#     return None
+
+
+# # ── Slack Alerts ──────────────────────────────────────────────────────────────
+
+# SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
+
+
+# async def _send_slack_alert(result: dict) -> None:
+#     if not SLACK_WEBHOOK_URL:
+#         return
+#     ip          = result.get("log", {}).get("src_ip", "unknown")
+#     attack_type = result.get("prediction", "Unknown")
+#     score       = result.get("anomaly_score", 0)
+#     explanation = result.get("ai_explanation") or ""
+#     truncated   = explanation[:300] + "…" if len(explanation) > 300 else explanation
+#     geo         = result.get("geo") or {}
+#     location    = f"{geo.get('city','')}, {geo.get('country','')}".strip(", ") or "Unknown"
+#     payload = {
+#         "text": (
+#             f":rotating_light: *CRITICAL THREAT* :rotating_light:\n"
+#             f">*IP:* `{ip}` ({location})\n"
+#             f">*Type:* {attack_type}  |  *Score:* `{score}`\n"
+#             f">*Summary:* {truncated or '_unavailable_'}"
+#         )
+#     }
+#     try:
+#         async with httpx.AsyncClient(timeout=5.0) as client:
+#             await client.post(SLACK_WEBHOOK_URL, json=payload)
+#     except Exception:
+#         pass
+
+
+# # ── Shared result builder ─────────────────────────────────────────────────────
+
+# async def _build_results(
+#     df: pd.DataFrame,
+#     predictions: list[dict],
+#     pcap_df: pd.DataFrame | None = None,
+# ) -> list[dict]:
+#     results = []
+#     for i, (_, row) in enumerate(df.iterrows()):
+#         pred = predictions[i]
+#         log  = row.to_dict()
+
+#         if pcap_df is not None:
+#             pred = enrich_result_with_pcap_meta(pred, pcap_df.iloc[i])
+
+#         geo = await _geolocate(str(log.get("src_ip", "")))
+
+#         explanation = None
+#         if pred["threat_level"] in ("high", "critical"):
+#             try:
+#                 explanation = explain_attack({**log, **pred})
+#             except Exception as e:
+#                 explanation = f"AI explanation unavailable: {e}"
+
+#         entry = {
+#             "log":            log,
+#             "prediction":     pred["prediction"],
+#             "threat_level":   pred["threat_level"],
+#             "anomaly_score":  pred["anomaly_score"],
+#             "confidence":     pred.get("threat_confidence", 0),
+#             "ai_explanation": explanation,
+#             "geo":            geo,
+#             "packet_count":   pred.get("packet_count"),
+#             "unique_ports":   pred.get("unique_ports"),
+#             "duration_sec":   pred.get("duration_sec"),
+#             "data_source":    pred.get("data_source", "csv"),
+#         }
+
+#         if pred["threat_level"] == "critical":
+#             await _send_slack_alert(entry)
+
+#         results.append(entry)
+#     return results
+
+
+# def _build_summary(results: list[dict]) -> dict:
+#     threat_counts = Counter(r["threat_level"] for r in results)
+#     attack_types  = Counter(
+#         r["prediction"] for r in results if r["prediction"] != "Normal"
+#     )
+#     total = len(results)
+#     return {
+#         "total_logs":       total,
+#         "normal":           threat_counts.get("low",      0),
+#         "suspicious":       threat_counts.get("medium",   0),
+#         "high_threats":     threat_counts.get("high",     0),
+#         "critical_threats": threat_counts.get("critical", 0),
+#         "top_attack_types": dict(attack_types.most_common(5)),
+#         "threat_rate":      round(
+#             (total - threat_counts.get("low", 0)) / max(total, 1) * 100, 1
+#         ),
+#     }
+
+
+# # ── Health ────────────────────────────────────────────────────────────────────
+
+# @app.get("/")
+# def home():
+#     return {"status": "Network Sentinel Running", "version": "2.2"}
+
+
+# @app.get("/health")
+# def health():
+#     return {"status": "ok", "model": "IsolationForest v2", "features": 7}
+
+
+# # ── CSV Analysis ──────────────────────────────────────────────────────────────
+
+# @app.post("/analyze", tags=["analysis"])
+# async def analyze_csv(file: UploadFile = File(...)):
+#     if not file.filename.endswith(".csv"):
+#         raise HTTPException(400, "Only CSV files are accepted.")
+#     contents = await file.read()
+#     try:
+#         df = pd.read_csv(io.BytesIO(contents))
+#     except Exception:
+#         raise HTTPException(400, "Could not parse CSV.")
+#     missing = REQUIRED_CSV_COLS - set(df.columns)
+#     if missing:
+#         raise HTTPException(422, f"CSV missing columns: {missing}")
+#     predictions = predict_batch(df)
+#     results     = await _build_results(df, predictions)
+#     return {"summary": _build_summary(results), "results": results}
+
+
+# # ── PCAP Analysis ─────────────────────────────────────────────────────────────
+
+# @app.post("/analyze-pcap", tags=["analysis"])
+# async def analyze_pcap(file: UploadFile = File(...)):
+#     fname = (file.filename or "").lower()
+#     if not (fname.endswith(".pcap") or fname.endswith(".pcapng")):
+#         raise HTTPException(400, "Only .pcap / .pcapng files accepted.")
+#     contents = await file.read()
+#     try:
+#         pcap_df = parse_pcap(contents)
+#     except PCAPParseError as e:
+#         raise HTTPException(422, str(e))
+#     model_df    = pcap_df_to_model_input(pcap_df)
+#     predictions = predict_batch(model_df)
+#     results     = await _build_results(model_df, predictions, pcap_df=pcap_df)
+#     summary = _build_summary(results)
+#     summary["data_source"]    = "pcap"
+#     summary["total_packets"]  = int(pcap_df["_packet_count"].sum()) \
+#                                  if "_packet_count" in pcap_df.columns else None
+#     summary["unique_hosts"]   = len(pcap_df)
+#     summary["capture_window"] = float(pcap_df["_duration_sec"].max()) \
+#                                  if "_duration_sec" in pcap_df.columns else None
+#     return {"summary": summary, "results": results}
+
+
+# # ── Single predict ────────────────────────────────────────────────────────────
+
+# class LogEntry(BaseModel):
+#     src_ip:      str   = "0.0.0.0"
+#     port:        int
+#     packet_rate: float
+#     packet_size: float = 512.0
+
+
+# @app.post("/predict", tags=["analysis"])
+# async def predict_single(entry: LogEntry):
+#     df     = pd.DataFrame([entry.dict()])
+#     result = predict_batch(df)[0]
+#     geo    = await _geolocate(entry.src_ip)
+#     explanation = None
+#     if result["threat_level"] in ("high", "critical"):
+#         try:
+#             explanation = explain_attack({**entry.dict(), **result})
+#         except Exception as e:
+#             explanation = f"AI explanation unavailable: {e}"
+#     payload = {**result, "ai_explanation": explanation, "geo": geo}
+#     if result["threat_level"] == "critical":
+#         await _send_slack_alert({"log": entry.dict(), **payload})
+#     return payload
+
+
+# # ── Model Retraining ──────────────────────────────────────────────────────────
+
+# @app.post("/train", tags=["ml"])
+# async def train_model(file: UploadFile = File(...)):
+#     if not file.filename.endswith(".csv"):
+#         raise HTTPException(400, "Only CSV files are accepted for training.")
+#     contents = await file.read()
+#     try:
+#         df = pd.read_csv(io.BytesIO(contents))
+#     except Exception:
+#         raise HTTPException(400, "Could not parse training CSV.")
+#     try:
+#         stats = retrain(df)
+#     except ValueError as e:
+#         raise HTTPException(422, str(e))
+#     return stats
+
 
 
 from dotenv import load_dotenv
