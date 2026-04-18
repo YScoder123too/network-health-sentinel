@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import CursorGlow from "./components/CursorGlow"
+
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -711,6 +713,7 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
     <div style={{ background: "#000", color: "#00ff41", fontFamily: "'Fira Code',monospace", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
 
       <ParticleCanvas />
+      <CursorGlow />
       {showNews      && <NewsPanel      onClose={() => setShowNews(false)} />}
       {showAssistant && <AIAssistant    onClose={() => setShowAssistant(false)} />}
 
