@@ -42,9 +42,9 @@ interface ChatMsg { role: "user" | "assistant"; text: string }
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const THREAT_COLORS = {
-  low:      { color: "#00ff41", label: "NORMAL"   },
-  medium:   { color: "#ffd700", label: "MEDIUM"   },
-  high:     { color: "#ff6b35", label: "HIGH"     },
+  low: { color: "#00ff41", label: "NORMAL" },
+  medium: { color: "#ffd700", label: "MEDIUM" },
+  high: { color: "#ff6b35", label: "HIGH" },
   critical: { color: "#ff2d55", label: "CRITICAL" },
 }
 
@@ -94,7 +94,7 @@ function ParticleCanvas() {
       for (let i = 0; i < pts.length; i++)
         for (let j = i + 1; j < pts.length; j++) {
           const d = Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y)
-          if (d < 110) { ctx.beginPath(); ctx.strokeStyle = `rgba(0,255,65,${0.07*(1-d/110)})`; ctx.lineWidth = 0.5; ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke() }
+          if (d < 110) { ctx.beginPath(); ctx.strokeStyle = `rgba(0,255,65,${0.07 * (1 - d / 110)})`; ctx.lineWidth = 0.5; ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke() }
         }
       raf = requestAnimationFrame(draw)
     }
@@ -122,16 +122,16 @@ function ThreatVelocityChart({ results, liveMode }: { results: LogResult[]; live
   }
 
   const counts = {
-    normal:   results.filter(r => r.threat_level === "low").length,
-    medium:   results.filter(r => r.threat_level === "medium").length,
-    high:     results.filter(r => r.threat_level === "high").length,
+    normal: results.filter(r => r.threat_level === "low").length,
+    medium: results.filter(r => r.threat_level === "medium").length,
+    high: results.filter(r => r.threat_level === "high").length,
     critical: results.filter(r => r.threat_level === "critical").length,
   }
 
   const bars = [
-    { label: "NORMAL",   val: counts.normal,   color: "#00ff41", short: "NRM" },
-    { label: "MEDIUM",   val: counts.medium,   color: "#ffd700", short: "MED" },
-    { label: "HIGH",     val: counts.high,     color: "#ff6b35", short: "HGH" },
+    { label: "NORMAL", val: counts.normal, color: "#00ff41", short: "NRM" },
+    { label: "MEDIUM", val: counts.medium, color: "#ffd700", short: "MED" },
+    { label: "HIGH", val: counts.high, color: "#ff6b35", short: "HGH" },
     { label: "CRITICAL", val: counts.critical, color: "#ff2d55", short: "CRT" },
   ]
   const maxVal = Math.max(...bars.map(b => b.val), 1)
@@ -199,10 +199,10 @@ function NetworkMap({ results }: { results: LogResult[] }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: 0.25, fontSize: 10, gap: 8, letterSpacing: 1, textAlign: "center", padding: 16 }}>
         <svg width="40" height="40" viewBox="0 0 40 40" style={{ opacity: 0.4 }}>
           <circle cx="20" cy="20" r="3" fill="#00ff41" />
-          <circle cx="8"  cy="10" r="2" fill="#00ff41" opacity="0.5" />
+          <circle cx="8" cy="10" r="2" fill="#00ff41" opacity="0.5" />
           <circle cx="32" cy="12" r="2" fill="#00ff41" opacity="0.5" />
           <circle cx="10" cy="30" r="2" fill="#00ff41" opacity="0.5" />
-          <line x1="20" y1="20" x2="8"  y2="10" stroke="#00ff41" strokeWidth="0.5" opacity="0.3" />
+          <line x1="20" y1="20" x2="8" y2="10" stroke="#00ff41" strokeWidth="0.5" opacity="0.3" />
           <line x1="20" y1="20" x2="32" y2="12" stroke="#00ff41" strokeWidth="0.5" opacity="0.3" />
           <line x1="20" y1="20" x2="10" y2="30" stroke="#00ff41" strokeWidth="0.5" opacity="0.3" />
         </svg>
@@ -213,7 +213,7 @@ function NetworkMap({ results }: { results: LogResult[] }) {
   }
 
   // Deduplicate IPs, keep worst threat level per IP
-  const ipMap: Record<string, { ip: string; level: LogResult["threat_level"]; count: number; prediction: string; geo?: LogResult["geo"]; port?: string|number; rate?: string|number }> = {}
+  const ipMap: Record<string, { ip: string; level: LogResult["threat_level"]; count: number; prediction: string; geo?: LogResult["geo"]; port?: string | number; rate?: string | number }> = {}
   for (const r of results) {
     const ip = String(r.log.src_ip || "unknown")
     const existing = ipMap[ip]
@@ -241,7 +241,7 @@ function NetworkMap({ results }: { results: LogResult[] }) {
     <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
       {/* Legend */}
       <div style={{ position: "absolute", top: 8, left: 10, zIndex: 2, display: "flex", flexDirection: "column", gap: 3 }}>
-        {(["low","medium","high","critical"] as const).map(lvl => (
+        {(["low", "medium", "high", "critical"] as const).map(lvl => (
           <div key={lvl} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 8, opacity: 0.5 }}>
             <div style={{ width: sizeMap[lvl], height: sizeMap[lvl], borderRadius: "50%", background: THREAT_COLORS[lvl].color, flexShrink: 0 }} />
             <span style={{ color: THREAT_COLORS[lvl].color }}>{THREAT_COLORS[lvl].label}</span>
@@ -312,10 +312,10 @@ function NetworkMap({ results }: { results: LogResult[] }) {
 // Calls /chat on the FastAPI backend — API key stays server-side
 
 function AIAssistant({ onClose }: { onClose: () => void }) {
-  const [msgs, setMsgs]         = useState<ChatMsg[]>([
+  const [msgs, setMsgs] = useState<ChatMsg[]>([
     { role: "assistant", text: "SENTINEL_AI online. Ask me anything about network security, threat analysis, anomaly scores, or this tool." }
   ])
-  const [input, setInput]       = useState("")
+  const [input, setInput] = useState("")
   const [thinking, setThinking] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -387,10 +387,10 @@ function AIAssistant({ onClose }: { onClose: () => void }) {
 // ── News Panel ────────────────────────────────────────────────────────────────
 
 function NewsPanel({ onClose }: { onClose: () => void }) {
-  const [vis, setVis]         = useState(false)
+  const [vis, setVis] = useState(false)
   const [articles, setArticles] = useState<NewsItem[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [isLive, setIsLive]     = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [isLive, setIsLive] = useState(false)
 
   useEffect(() => {
     setTimeout(() => setVis(true), 10)
@@ -403,13 +403,13 @@ function NewsPanel({ onClose }: { onClose: () => void }) {
       .catch(() => {
         // Backend unreachable — show fallback inline
         setArticles([
-          { title: "CISA warns of active exploitation of Cisco IOS XE vulnerability", source: "The Hacker News", tag: "CVE",      color: "#ffd700", url: "https://thehackernews.com", time: "recent" },
-          { title: "Ransomware group claims 2.5TB breach of US healthcare provider",   source: "BleepingComputer",tag: "BREACH",   color: "#ff2d55", url: "https://bleepingcomputer.com", time: "recent" },
-          { title: "New LLM jailbreak technique bypasses safety filters in AI models",  source: "Wired",           tag: "AI/ML",    color: "#00ff41", url: "https://wired.com", time: "recent" },
-          { title: "NIST finalizes post-quantum cryptography standards",                source: "NIST",            tag: "CRYPTO",   color: "#0047ab", url: "https://nist.gov", time: "recent" },
-          { title: "North Korean APT deploys novel supply chain attack vector",         source: "Mandiant",        tag: "APT",      color: "#ff6b35", url: "https://mandiant.com", time: "recent" },
-          { title: "Cloudflare mitigates largest DDoS attack at 5.6 Tbps",             source: "Cloudflare Blog", tag: "DDOS",     color: "#ff2d55", url: "https://blog.cloudflare.com", time: "recent" },
-          { title: "EU AI Act enforcement begins — fines up to €35M for violations",   source: "Reuters",         tag: "POLICY",   color: "#0047ab", url: "https://reuters.com", time: "recent" },
+          { title: "CISA warns of active exploitation of Cisco IOS XE vulnerability", source: "The Hacker News", tag: "CVE", color: "#ffd700", url: "https://thehackernews.com", time: "recent" },
+          { title: "Ransomware group claims 2.5TB breach of US healthcare provider", source: "BleepingComputer", tag: "BREACH", color: "#ff2d55", url: "https://bleepingcomputer.com", time: "recent" },
+          { title: "New LLM jailbreak technique bypasses safety filters in AI models", source: "Wired", tag: "AI/ML", color: "#00ff41", url: "https://wired.com", time: "recent" },
+          { title: "NIST finalizes post-quantum cryptography standards", source: "NIST", tag: "CRYPTO", color: "#0047ab", url: "https://nist.gov", time: "recent" },
+          { title: "North Korean APT deploys novel supply chain attack vector", source: "Mandiant", tag: "APT", color: "#ff6b35", url: "https://mandiant.com", time: "recent" },
+          { title: "Cloudflare mitigates largest DDoS attack at 5.6 Tbps", source: "Cloudflare Blog", tag: "DDOS", color: "#ff2d55", url: "https://blog.cloudflare.com", time: "recent" },
+          { title: "EU AI Act enforcement begins — fines up to €35M for violations", source: "Reuters", tag: "POLICY", color: "#0047ab", url: "https://reuters.com", time: "recent" },
         ])
         setIsLive(false)
       })
@@ -492,27 +492,27 @@ function DataSourceBadge({ source }: { source?: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [file, setFile]               = useState<File | null>(null)
-  const [results, setResults]         = useState<LogResult[]>([])
-  const [summary, setSummary]         = useState<Summary | null>(null)
-  const [loading, setLoading]         = useState(false)
-  const [liveMode, setLiveMode]       = useState(false)
-  const [expanded, setExpanded]       = useState<number | null>(null)
-  const [filter, setFilter]           = useState("all")
-  const [cmd, setCmd]                 = useState("")
-  const [suggestions, setSugg]        = useState<string[]>([])
-  const [activeView, setActiveView]   = useState<"upload" | "threat_feed">("upload")
-  const [time, setTime]               = useState("")
+  const [file, setFile] = useState<File | null>(null)
+  const [results, setResults] = useState<LogResult[]>([])
+  const [summary, setSummary] = useState<Summary | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [liveMode, setLiveMode] = useState(false)
+  const [expanded, setExpanded] = useState<number | null>(null)
+  const [filter, setFilter] = useState("all")
+  const [cmd, setCmd] = useState("")
+  const [suggestions, setSugg] = useState<string[]>([])
+  const [activeView, setActiveView] = useState<"upload" | "threat_feed">("upload")
+  const [time, setTime] = useState("")
   const [streamTotal, setStreamTotal] = useState(0)
-  const [error, setError]             = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [showAssistant, setShowAssistant] = useState(false)
-  const [showNews, setShowNews]           = useState(false)
-  const [newsItems, setNewsItems]         = useState<NewsItem[]>([])
-  const [tickerIdx, setTickerIdx]         = useState(0)
-  const [glitch, setGlitch]               = useState(false)
+  const [showNews, setShowNews] = useState(false)
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([])
+  const [tickerIdx, setTickerIdx] = useState(0)
+  const [glitch, setGlitch] = useState(false)
 
-  const fileRef    = useRef<HTMLInputElement>(null)
-  const esRef      = useRef<EventSource | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const esRef = useRef<EventSource | null>(null)
   const feedBottom = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -538,15 +538,25 @@ export default function Home() {
             fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/news`)
               .then(r => r.json())
               .then(data => setNewsItems(data.articles ?? []))
-              .catch(() => {})
+              .catch(() => { })
             return
           }
-        } catch {}
+        } catch { }
         await new Promise(res => setTimeout(res, 10000)) // wait 10s between retries
       }
     }
     wakeUp()
   }, [])
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === "Escape") setSugg([]) }
+    window.addEventListener("keydown", handleEsc)
+    return () => window.removeEventListener("keydown", handleEsc)
+  }, [])
+
+
+
+
   useEffect(() => { feedBottom.current?.scrollIntoView({ behavior: "smooth" }) }, [results.length])
 
   function stopStream() { esRef.current?.close(); esRef.current = null; setLiveMode(false); setLoading(false) }
@@ -580,8 +590,8 @@ export default function Home() {
           if (!ev || !dl) continue
           const d = JSON.parse(dl)
           if (ev === "start") setStreamTotal(d.total)
-          if (ev === "log")   setResults(prev => [d, ...prev])
-          if (ev === "done")  { setSummary(d.summary); setLoading(false) }
+          if (ev === "log") setResults(prev => [d, ...prev])
+          if (ev === "done") { setSummary(d.summary); setLoading(false) }
         }
       }
     } catch (e: unknown) { setError(e instanceof Error ? e.message : "Unknown error"); setLoading(false) }
@@ -594,7 +604,7 @@ export default function Home() {
     stopStream(); setResults([]); setSummary(null); setError(null); setLiveMode(true); setActiveView("threat_feed")
     const es = new EventSource(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/live/stream?rate=${rate}`)
     esRef.current = es
-    es.addEventListener("log",   e => setResults(prev => [JSON.parse(e.data), ...prev.slice(0, 99)]))
+    es.addEventListener("log", e => setResults(prev => [JSON.parse(e.data), ...prev.slice(0, 99)]))
     es.addEventListener("stats", e => {
       const s = JSON.parse(e.data)
       setSummary({ total_logs: s.total, normal: s.normal, suspicious: s.medium, high_threats: s.high, critical_threats: s.critical, top_attack_types: {}, threat_rate: Math.round((s.total - s.normal) / Math.max(s.total, 1) * 100) })
@@ -603,18 +613,19 @@ export default function Home() {
   }
 
   function handleCmd(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Tab")   { e.preventDefault(); if (suggestions.length) setCmd(suggestions[0]); return }
+    if (e.key === "Tab") { e.preventDefault(); if (suggestions.length) setCmd(suggestions[0]); return }
     if (e.key !== "Enter") return
     const c = cmd.trim().toLowerCase()
-    if      (c === "/clear logs")                    { stopStream(); setResults([]); setSummary(null); setFile(null); setActiveView("upload") }
-    else if (c === "/live stop")                     { stopStream() }
-    else if (c.startsWith("/live"))                  { startLiveStream(parseFloat(c.split("--rate")[1]) || 1) }
-    else if (c.startsWith("/filter --threat "))      { setFilter(c.replace("/filter --threat ", "")); setActiveView("threat_feed") }
-    else if (c === "/status model")                  { alert("MODEL: IsolationForest v2 | FEATURES: 7 | PCAP: scapy | STATUS: READY") }
-    else if (c.startsWith("/analyze"))               { fileRef.current?.click() }
-    else if (c === "/news")                          { setShowNews(true) }
-    else if (c === "/assistant")                     { setShowAssistant(true) }
+    if (c === "/clear logs") { stopStream(); setResults([]); setSummary(null); setFile(null); setActiveView("upload") }
+    else if (c === "/live stop") { stopStream() }
+    else if (c.startsWith("/live")) { startLiveStream(parseFloat(c.split("--rate")[1]) || 1) }
+    else if (c.startsWith("/filter --threat ")) { setFilter(c.replace("/filter --threat ", "")); setActiveView("threat_feed") }
+    else if (c === "/status model") { alert("MODEL: IsolationForest v2 | FEATURES: 7 | PCAP: scapy | STATUS: READY") }
+    else if (c.startsWith("/analyze")) { fileRef.current?.click() }
+    else if (c === "/news") { setShowNews(true) }
+    else if (c === "/assistant") { setShowAssistant(true) }
     setCmd("")
+    setSugg([])
   }
 
   function handleCmdChange(val: string) {
@@ -623,28 +634,28 @@ export default function Home() {
 
   const filtered = results.filter(r =>
     filter === "all" ? true : filter === "critical" ? r.threat_level === "critical" :
-    filter === "high" ? r.threat_level === "high" : filter === "medium" ? r.threat_level === "medium" : r.threat_level === "low"
+      filter === "high" ? r.threat_level === "high" : filter === "medium" ? r.threat_level === "medium" : r.threat_level === "low"
   )
 
   const isPcapSession = summary?.data_source === "pcap"
 
   function exportJSON(data: LogResult[], sum: Summary | null) {
     const payload = {
-      generated_at: new Date(Date.now() + 5.5*60*60*1000).toISOString().replace("T"," ").slice(0,19) + " IST",
+      generated_at: new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().replace("T", " ").slice(0, 19) + " IST",
       model: "IsolationForest v2 · 7 features",
       ai_layer: "Groq/Llama-3.3-70B",
       summary: sum,
       results: data.map(r => ({
-        src_ip:        r.log.src_ip,
-        port:          r.log.port,
-        packet_rate:   r.log.packet_rate,
-        packet_size:   r.log.packet_size,
-        prediction:    r.prediction,
-        threat_level:  r.threat_level,
+        src_ip: r.log.src_ip,
+        port: r.log.port,
+        packet_rate: r.log.packet_rate,
+        packet_size: r.log.packet_size,
+        prediction: r.prediction,
+        threat_level: r.threat_level,
         anomaly_score: r.anomaly_score,
-        confidence:    r.confidence,
-        geo:           r.geo ?? null,
-        soc_report:    r.ai_explanation ?? null,
+        confidence: r.confidence,
+        geo: r.geo ?? null,
+        soc_report: r.ai_explanation ?? null,
       }))
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
@@ -653,69 +664,212 @@ export default function Home() {
   }
 
   function exportPDF(data: LogResult[], sum: Summary | null) {
-    const ts = new Date(Date.now() + 5.5*60*60*1000).toISOString().replace('T',' ').slice(0,19) + ' IST'
+    const ts = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19) + ' IST'
     const high = data.filter(r => r.threat_level === "high" || r.threat_level === "critical")
-    let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sentinel Report</title>
-<style>
-body{font-family:'Courier New',monospace;background:#fff;color:#000;padding:40px;font-size:12px}
-h1{font-size:20px;border-bottom:2px solid #000;padding-bottom:8px}
-h2{font-size:14px;margin-top:28px;border-left:4px solid #000;padding-left:10px}
-.meta{color:#555;margin-bottom:24px}
-table{width:100%;border-collapse:collapse;margin:16px 0}
-th{background:#000;color:#fff;padding:6px 10px;text-align:left;font-size:11px}
-td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
-.critical{color:#cc0000;font-weight:bold}.high{color:#cc5500;font-weight:bold}
-.medium{color:#aa7700}.low{color:#007700}
-.soc{background:#f5f5f5;border-left:3px solid #333;padding:12px 16px;margin:8px 0;white-space:pre-wrap;font-size:11px;line-height:1.7}
-</style></head><body>
-<h1>NETWORK HEALTH SENTINEL — THREAT REPORT</h1>
-<div class="meta">Generated: ${ts}<br>Model: IsolationForest v2 · 7 features · Groq/Llama-3.3-70B SOC Analysis</div>`
+    const crit = data.filter(r => r.threat_level === "critical").length
+    const hi = data.filter(r => r.threat_level === "high").length
+    const threatPct = sum?.threat_rate ?? (data.length > 0 ? Math.round((data.filter(r => r.threat_level !== "low").length / data.length) * 100) : 0)
 
-    if (sum) {
-      html += `<h2>EXECUTIVE SUMMARY</h2>`
-      if (sum.exec_summary) html += `<p>${sum.exec_summary}</p>`
-      html += `<table><tr><th>METRIC</th><th>VALUE</th></tr>
-        <tr><td>Total Logs</td><td>${sum.total_logs}</td></tr>
-        <tr><td>Threat Rate</td><td>${sum.threat_rate}%</td></tr>
-        <tr><td>Critical</td><td><span class="critical">${sum.critical_threats}</span></td></tr>
-        <tr><td>High</td><td><span class="high">${sum.high_threats}</span></td></tr>
-        <tr><td>Suspicious</td><td><span class="medium">${sum.suspicious}</span></td></tr>
-        <tr><td>Normal</td><td><span class="low">${sum.normal}</span></td></tr></table>`
-      if (Object.keys(sum.top_attack_types).length > 0) {
-        html += `<h2>ATTACK BREAKDOWN</h2><table><tr><th>ATTACK TYPE</th><th>COUNT</th></tr>`
-        Object.entries(sum.top_attack_types).forEach(([k,v]) => { html += `<tr><td>${k}</td><td>${v}</td></tr>` })
-        html += `</table>`
-      }
-    }
-    html += `<h2>FULL THREAT LOG</h2><table><tr><th>SOURCE IP</th><th>PORT</th><th>RATE</th><th>SIZE</th><th>DETECTION</th><th>LEVEL</th><th>SCORE</th></tr>`
-    data.forEach(r => {
-      const lvl = r.threat_level
-      html += `<tr><td>${r.log.src_ip ?? ""}${r.geo?.country ? ` (${r.geo.country})` : ""}</td><td>${r.log.port ?? ""}</td><td>${r.log.packet_rate ?? ""}</td><td>${r.log.packet_size ?? ""}</td><td><span class="${lvl}">${r.prediction}</span></td><td><span class="${lvl}">${lvl.toUpperCase()}</span></td><td>${typeof r.anomaly_score === "number" ? r.anomaly_score.toFixed(4) : ""}</td></tr>`
-    })
-    html += `</table>`
-    if (high.length > 0) {
-      html += `<h2>SOC ANALYST REPORTS — HIGH & CRITICAL (${high.length})</h2>`
-      high.forEach(r => {
-        const lvl = r.threat_level
-        html += `<div style="margin-bottom:24px;page-break-inside:avoid">
-          <div style="font-weight:bold;font-size:13px;margin-bottom:4px"><span class="${lvl}">[${lvl.toUpperCase()}]</span> ${r.prediction} — ${r.log.src_ip ?? ""}:${r.log.port ?? ""}${r.geo?.country ? ` · ${r.geo.country}` : ""}</div>
-          <div style="font-size:10px;color:#555;margin-bottom:6px">Rate: ${r.log.packet_rate} pps · Size: ${r.log.packet_size}B · Score: ${typeof r.anomaly_score === "number" ? r.anomaly_score.toFixed(4) : ""}</div>
-          <div class="soc">${r.ai_explanation ? r.ai_explanation.replace(/</g,"&lt;").replace(/>/g,"&gt;") : "SOC report not available for this entry."}</div>
-        </div>`
-      })
-    }
-    html += `<div style="margin-top:40px;border-top:1px solid #ccc;padding-top:12px;font-size:10px;color:#888">Network Health Sentinel · Auto-generated threat report</div></body></html>`
+    // ── Plain-English executive verdict ──────────────────────────────────────
+    const isSafe = crit === 0 && hi === 0
+    const verdict = isSafe
+      ? `✅ Your network appears <strong>safe</strong>. No high or critical threats were detected during this analysis window. Normal traffic patterns dominate — no immediate action is required.`
+      : `🚨 Your network is <strong>under active threat</strong>. ${crit} critical and ${hi} high-severity events were detected (${threatPct}% threat rate). Immediate review of flagged IPs and firewall rules is strongly recommended.`
+
+    // ── Remediation commands for flagged IPs ─────────────────────────────────
+    const flaggedIPs = [...new Set(high.map(r => String(r.log.src_ip ?? "")))]
+    const remSteps = flaggedIPs.length === 0 ? "<p style='color:#555'>No high/critical IPs flagged — no firewall changes required.</p>" : `
+      <p style='margin-bottom:10px;color:#333'>Block the following source IPs on your perimeter firewall immediately:</p>
+      <div style='background:#0a0a0a;color:#00e63a;font-family:Courier New,monospace;padding:14px 18px;border-left:4px solid #00e63a;font-size:11px;line-height:2'>
+        ${flaggedIPs.map(ip => `<div><span style='opacity:.5'># Linux / iptables</span><br>iptables -I INPUT -s ${ip} -j DROP<br><span style='opacity:.5'># Windows firewall</span><br>netsh advfirewall firewall add rule name="Block ${ip}" dir=in action=block remoteip=${ip}<br></div>`).join("<hr style='border-color:#1a1a1a;margin:6px 0'>")}
+      </div>
+      <p style='margin-top:12px;font-size:10px;color:#888'>Also consider: rate-limiting port ${high[0]?.log.port ?? "N/A"} · enabling IDS/IPS signatures for detected attack types · reviewing authentication logs for lateral movement.</p>
+    `
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Network Health Sentinel — Threat Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:#f8f9fa;color:#111;font-size:12px;line-height:1.6}
+
+  /* ── Page chrome ── */
+  .page{max-width:900px;margin:0 auto;padding:48px 52px}
+  @media print{body{background:#fff}.page{padding:32px 40px}}
+
+  /* ── Header ── */
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:3px solid #000;margin-bottom:28px}
+  .hdr-left h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;color:#000}
+  .hdr-left .sub{font-size:10px;letter-spacing:2px;color:#555;margin-top:4px;text-transform:uppercase}
+  .hdr-right{text-align:right;font-size:10px;color:#555;line-height:2}
+  .hdr-right a{color:#0047ab;text-decoration:none}
+  .badge-safe{display:inline-block;background:#00c940;color:#fff;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;margin-top:6px}
+  .badge-threat{display:inline-block;background:#cc0000;color:#fff;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;margin-top:6px}
+
+  /* ── Section headers ── */
+  .tier{margin-bottom:32px;page-break-inside:avoid}
+  .tier-label{font-size:9px;font-weight:700;letter-spacing:3px;color:#0047ab;text-transform:uppercase;border-top:2px solid #0047ab;padding-top:8px;margin-bottom:14px}
+  h2{font-size:14px;font-weight:700;color:#000;margin-bottom:10px}
+
+  /* ── Verdict box ── */
+  .verdict{padding:16px 20px;border-left:5px solid ${isSafe ? "#00c940" : "#cc0000"};background:${isSafe ? "#f0fff4" : "#fff5f5"};font-size:13px;line-height:1.8;color:#111}
+
+  /* ── Stats grid ── */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+  .stat{background:#fff;border:1px solid #ddd;padding:12px 14px;border-top:3px solid #0047ab}
+  .stat .val{font-size:22px;font-weight:700;color:#000;font-family:'JetBrains Mono',monospace}
+  .stat .lbl{font-size:9px;letter-spacing:1.5px;color:#888;margin-top:2px;text-transform:uppercase}
+  .stat.danger{border-top-color:#cc0000}.stat.danger .val{color:#cc0000}
+  .stat.warn{border-top-color:#cc7000}.stat.warn .val{color:#cc7000}
+  .stat.ok{border-top-color:#00a830}.stat.ok .val{color:#00a830}
+
+  /* ── Tables ── */
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:10px}
+  th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;font-size:9px}
+  td{padding:6px 10px;border-bottom:1px solid #eee;font-family:'JetBrains Mono',monospace}
+  tr:nth-child(even) td{background:#fafafa}
+  .lvl-critical{color:#cc0000;font-weight:700}.lvl-high{color:#cc5500;font-weight:700}.lvl-medium{color:#aa7700}.lvl-low{color:#00a830}
+
+  /* ── SOC card ── */
+  .soc-card{background:#fff;border:1px solid #e0e0e0;border-left:4px solid #cc0000;padding:14px 16px;margin-bottom:16px;page-break-inside:avoid}
+  .soc-card.high{border-left-color:#cc5500}
+  .soc-card .soc-hdr{font-weight:700;font-size:11px;margin-bottom:6px;display:flex;gap:10px;align-items:center}
+  .soc-card .soc-meta{font-size:10px;color:#666;margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+  .soc-card .soc-body{font-size:10px;color:#333;line-height:1.9;white-space:pre-wrap;border-top:1px solid #eee;padding-top:8px}
+
+  /* ── Remediation ── */
+  .rem{margin-top:10px}
+
+  /* ── Footer ── */
+  .footer{margin-top:40px;border-top:1px solid #ddd;padding-top:14px;display:flex;justify-content:space-between;font-size:9px;color:#aaa;letter-spacing:.5px}
+</style>
+</head>
+<body><div class="page">
+
+<!-- ════════ HEADER ════════ -->
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>⬡ NETWORK HEALTH SENTINEL</h1>
+    <div class="sub">Automated Threat Intelligence Report &nbsp;·&nbsp; v1.0</div>
+    <div style="margin-top:10px">${isSafe
+        ? '<span class="badge-safe">● NETWORK SAFE</span>'
+        : '<span class="badge-threat">⚠ THREATS DETECTED</span>'}</div>
+  </div>
+  <div class="hdr-right">
+    <strong style="color:#000;font-size:11px">Lead Developer</strong><br>
+    Yogita Singh<br>
+    <a href="https://yogitasingh.me/" target="_blank">yogitasingh.me</a><br><br>
+    <strong style="color:#000">Generated</strong><br>${ts}<br>
+    Model: IsolationForest v2 · 7 features<br>
+    AI Layer: Gemini-1.5-flash
+  </div>
+</div>
+
+<!-- ════════ TIER 1 — EXECUTIVE SUMMARY ════════ -->
+<div class="tier">
+  <div class="tier-label">Tier 1 &nbsp;·&nbsp; Executive Summary &nbsp;·&nbsp; Non-Technical</div>
+  <h2>Network Health Verdict</h2>
+  <div class="verdict">${verdict}</div>
+  ${sum ? `
+  <div class="stats">
+    <div class="stat ${sum.critical_threats > 0 ? "danger" : "ok"}">
+      <div class="val">${sum.critical_threats}</div><div class="lbl">Critical Threats</div>
+    </div>
+    <div class="stat ${sum.high_threats > 0 ? "warn" : "ok"}">
+      <div class="val">${sum.high_threats}</div><div class="lbl">High Threats</div>
+    </div>
+    <div class="stat">
+      <div class="val">${sum.threat_rate}%</div><div class="lbl">Threat Rate</div>
+    </div>
+    <div class="stat ok">
+      <div class="val">${sum.total_logs}</div><div class="lbl">Total Logs</div>
+    </div>
+  </div>
+  ${sum.exec_summary ? `<p style="font-size:11px;color:#444;line-height:1.9;margin-top:12px;padding:12px 16px;background:#fff;border:1px solid #e8e8e8">${sum.exec_summary}</p>` : ""}
+  ` : ""}
+</div>
+
+<!-- ════════ TIER 2 — SOC THREAT INTELLIGENCE ════════ -->
+<div class="tier">
+  <div class="tier-label">Tier 2 &nbsp;·&nbsp; Threat Intelligence &nbsp;·&nbsp; SOC Analysts</div>
+  <h2>Full Threat Log &nbsp;<span style="font-size:10px;font-weight:400;color:#888">(${data.length} events)</span></h2>
+  <table>
+    <tr><th>SOURCE IP</th><th>GEO</th><th>PORT</th><th>RATE (pps)</th><th>SIZE (B)</th><th>DETECTION</th><th>LEVEL</th><th>SCORE</th><th>CONF %</th></tr>
+    ${data.map(r => `<tr>
+      <td>${r.log.src_ip ?? ""}</td>
+      <td style="color:#0047ab">${r.geo?.country ? `${r.geo.city ? r.geo.city + ", " : ""}${r.geo.country}` : "-"}</td>
+      <td>${r.log.port ?? ""}</td>
+      <td>${r.log.packet_rate ?? ""}</td>
+      <td>${r.log.packet_size ?? ""}</td>
+      <td class="lvl-${r.threat_level}">${r.prediction}</td>
+      <td class="lvl-${r.threat_level}">${r.threat_level.toUpperCase()}</td>
+      <td>${typeof r.anomaly_score === "number" ? r.anomaly_score.toFixed(4) : ""}</td>
+      <td>${r.confidence}%</td>
+    </tr>`).join("")}
+  </table>
+  ${Object.keys(sum?.top_attack_types ?? {}).length > 0 ? `
+  <h2 style="margin-top:20px">MITRE ATT&CK — Attack Breakdown</h2>
+  <table><tr><th>ATTACK TYPE / TECHNIQUE</th><th>COUNT</th><th>% SHARE</th></tr>
+    ${Object.entries(sum!.top_attack_types).sort((a, b) => b[1] - a[1]).map(([k, v]) => `
+    <tr><td>${k}</td><td>${v}</td><td>${Math.round(v / data.length * 100)}%</td></tr>`).join("")}
+  </table>`: ""}
+  ${high.length > 0 ? `
+  <h2 style="margin-top:24px">Gemini SOC Analysis — High &amp; Critical Events (${high.length})</h2>
+  ${high.map(r => `
+  <div class="soc-card ${r.threat_level}">
+    <div class="soc-hdr">
+      <span class="lvl-${r.threat_level}">[${r.threat_level.toUpperCase()}]</span>
+      <span>${r.prediction}</span>
+    </div>
+    <div class="soc-meta">
+      SRC: ${r.log.src_ip ?? "-"}:${r.log.port ?? "-"} &nbsp;·&nbsp;
+      RATE: ${r.log.packet_rate ?? "-"} pps &nbsp;·&nbsp;
+      SIZE: ${r.log.packet_size ?? "-"}B &nbsp;·&nbsp;
+      SCORE: ${typeof r.anomaly_score === "number" ? r.anomaly_score.toFixed(4) : "-"} &nbsp;·&nbsp;
+      CONF: ${r.confidence}%
+      ${r.geo?.country ? ` &nbsp;·&nbsp; GEO: ${r.geo.city ? r.geo.city + ", " : ""}${r.geo.country}` : ""}
+    </div>
+    <div class="soc-body">${r.ai_explanation ? r.ai_explanation.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "SOC analysis not available for this entry."}</div>
+  </div>`).join("")}
+  `: ""}
+</div>
+
+<!-- ════════ TIER 3 — ACTIONABLE REMEDIATION ════════ -->
+<div class="tier">
+  <div class="tier-label">Tier 3 &nbsp;·&nbsp; Actionable Remediation &nbsp;·&nbsp; IT / Network Engineers</div>
+  <h2>Next Steps — Immediate Action Required</h2>
+  <div class="rem">${remSteps}</div>
+  <div style="margin-top:20px;padding:14px 16px;background:#fff;border:1px solid #ddd;font-size:11px;line-height:2">
+    <strong style="display:block;margin-bottom:6px;font-size:10px;letter-spacing:1.5px;color:#0047ab">GENERAL HARDENING CHECKLIST</strong>
+    <span style="display:block">☐ &nbsp;Rotate credentials on any host that communicated with flagged IPs</span>
+    <span style="display:block">☐ &nbsp;Enable geo-blocking on origin countries of critical-threat IPs</span>
+    <span style="display:block">☐ &nbsp;Review SIEM/IDS alerts for correlated lateral movement events</span>
+    <span style="display:block">☐ &nbsp;Patch systems running services on commonly abused ports (22, 3389, 445, 80/443)</span>
+    <span style="display:block">☐ &nbsp;Schedule a re-scan within 24 hours to confirm remediation effectiveness</span>
+  </div>
+</div>
+
+<!-- ════════ FOOTER ════════ -->
+<div class="footer">
+  <span>Network Health Sentinel v1.0 &nbsp;·&nbsp; Built by Yogita Singh &nbsp;·&nbsp; yogitasingh.me</span>
+  <span>IsolationForest v2 · Gemini-1.5-flash · Auto-generated report</span>
+  <span>${ts}</span>
+</div>
+
+</div></body></html>`
+
     const win = window.open("", "_blank")
-    if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 500) }
+    if (win) { win.document.write(html); win.document.close(); setTimeout(() => win.print(), 600) }
   }
+
 
   return (
     <div style={{ background: "#000", color: "#00ff41", fontFamily: "'Fira Code',monospace", height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
 
       <ParticleCanvas />
       <CursorGlow />
-      {showNews      && <NewsPanel      onClose={() => setShowNews(false)} />}
-      {showAssistant && <AIAssistant    onClose={() => setShowAssistant(false)} />}
+      {showNews && <NewsPanel onClose={() => setShowNews(false)} />}
+      {showAssistant && <AIAssistant onClose={() => setShowAssistant(false)} />}
 
       {/* Floating assistant button */}
       <button onClick={() => setShowAssistant(p => !p)} title="SENTINEL_AI"
@@ -729,8 +883,8 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, whiteSpace: "nowrap" }}>⬡ SYSTEM_LOG:</span>
         <span style={{ fontSize: 10, opacity: 0.7, whiteSpace: "nowrap" }}>{TICKER_MSGS[tickerIdx]}</span>
         {liveMode && <span style={{ color: "#ff2d55", animation: "nodePulse 1s infinite", fontSize: 10, whiteSpace: "nowrap" }}>[LIVE] STREAMING</span>}
-        {loading  && <span style={{ color: "#ffd700", fontSize: 10, whiteSpace: "nowrap" }}>[SCANNING] {streamTotal > 0 ? `${results.length}/${streamTotal}` : "PROCESSING..."}</span>}
-        {error    && <span style={{ color: "#ff2d55", fontSize: 10, whiteSpace: "nowrap" }}>[ERROR] {error}</span>}
+        {loading && <span style={{ color: "#ffd700", fontSize: 10, whiteSpace: "nowrap" }}>[SCANNING] {streamTotal > 0 ? `${results.length}/${streamTotal}` : "PROCESSING..."}</span>}
+        {error && <span style={{ color: "#ff2d55", fontSize: 10, whiteSpace: "nowrap" }}>[ERROR] {error}</span>}
         <div style={{ marginLeft: "auto", display: "flex", gap: 20, fontSize: 11, flexShrink: 0 }}>
           <span style={{ opacity: 0.45 }}>CPU 14%</span>
           <span style={{ opacity: 0.45 }}>MEM 31%</span>
@@ -767,11 +921,11 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
 
             {results.length > 0 && <>
               <div style={{ marginTop: 16, fontSize: 10, opacity: 0.3, letterSpacing: 2, padding: "0 8px", marginBottom: 6 }}>FILTERS</div>
-              {(["all","critical","high","medium","low"] as const).map(f => (
+              {(["all", "critical", "high", "medium", "low"] as const).map(f => (
                 <div key={f} onClick={() => { setFilter(f); setActiveView("threat_feed") }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", cursor: "pointer", background: filter === f ? "rgba(0,255,65,0.06)" : "transparent", opacity: filter === f ? 1 : 0.45, fontSize: 11, transition: "all 0.15s" }}>
-                  <span style={{ color: f==="critical"?"#ff2d55":f==="high"?"#ff6b35":f==="medium"?"#ffd700":"#00ff41" }}>{f.toUpperCase()}</span>
+                  <span style={{ color: f === "critical" ? "#ff2d55" : f === "high" ? "#ff6b35" : f === "medium" ? "#ffd700" : "#00ff41" }}>{f.toUpperCase()}</span>
                   <span style={{ fontSize: 10, opacity: 0.5 }}>
-                    {f==="all" ? results.length : results.filter(r => r.threat_level === (f==="critical"?"critical":f==="high"?"high":f==="medium"?"medium":"low")).length}
+                    {f === "all" ? results.length : results.filter(r => r.threat_level === (f === "critical" ? "critical" : f === "high" ? "high" : f === "medium" ? "medium" : "low")).length}
                   </span>
                 </div>
               ))}
@@ -781,10 +935,10 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
               <div style={{ marginTop: 16, padding: "0 8px" }}>
                 <div style={{ fontSize: 10, opacity: 0.3, letterSpacing: 2, marginBottom: 8 }}>SESSION</div>
                 {[
-                  { label: "TOTAL",    val: summary.total_logs },
-                  { label: "THREAT%",  val: `${summary.threat_rate}%` },
+                  { label: "TOTAL", val: summary.total_logs },
+                  { label: "THREAT%", val: `${summary.threat_rate}%` },
                   { label: "CRITICAL", val: summary.critical_threats, color: "#ff2d55" },
-                  { label: "HIGH",     val: summary.high_threats,     color: "#ff6b35" },
+                  { label: "HIGH", val: summary.high_threats, color: "#ff6b35" },
                 ].map(s => (
                   <div key={s.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "3px 0", opacity: 0.65 }}>
                     <span>{s.label}</span><span style={{ color: s.color ?? "#00ff41" }}>{s.val}</span>
@@ -799,7 +953,7 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
               {(newsItems.length > 0 ? newsItems : [
                 { title: "Fetching threat intel...", color: "#00ff41" },
                 { title: "Cybersecurity news feed", color: "#0047ab" },
-                { title: "AI & ML updates",          color: "#00ff41" },
+                { title: "AI & ML updates", color: "#00ff41" },
               ]).slice(0, 3).map((n, i) => (
                 <div key={i} onClick={() => setShowNews(true)} style={{ fontSize: 9, opacity: 0.5, lineHeight: 1.8, cursor: "pointer", marginBottom: 4, display: "flex", gap: 6 }}>
                   <span style={{ color: n.color, flexShrink: 0 }}>■</span>
@@ -829,40 +983,187 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
           <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
             {activeView === "upload" && !loading && (
-              <div style={{ width: "100%", maxWidth: 520, marginTop: 32, animation: "fadeIn 0.4s ease" }}>
-                <div style={{ border: "1px dashed rgba(0,255,65,0.2)", padding: "48px 32px", textAlign: "center", background: "rgba(0,255,65,0.01)", marginBottom: 28, position: "relative", overflow: "hidden", transition: "border-color 0.2s" }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(0,255,65,0.45)")}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(0,255,65,0.2)")}>
-                  {[{top:0,left:0},{top:0,right:0},{bottom:0,left:0},{bottom:0,right:0}].map((pos,i) => (
-                    <div key={i} style={{ position:"absolute", ...pos, width:14, height:14, borderTop: i<2?"1px solid rgba(0,255,65,0.4)":"none", borderBottom: i>=2?"1px solid rgba(0,255,65,0.4)":"none", borderLeft: i%2===0?"1px solid rgba(0,255,65,0.4)":"none", borderRight: i%2===1?"1px solid rgba(0,255,65,0.4)":"none" }} />
+              <div style={{ width: "100%", maxWidth: 680, marginTop: 16, animation: "fadeIn 0.5s ease" }}>
+
+                {/* ── Section 2 — Hero Title Block ───────────────────────── */}
+                <div style={{ textAlign: "center", marginBottom: 28 }}>
+
+                  {/* 2a — Decorative rule */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                    <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, rgba(0,255,65,0.3))" }} />
+                    <span style={{ fontSize: 9, letterSpacing: 3, color: "rgba(0,255,65,0.6)", whiteSpace: "nowrap" }}>NETWORK HEALTH SENTINEL</span>
+                    <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, rgba(0,255,65,0.3))" }} />
+                  </div>
+
+                  {/* 2b — Main headline */}
+                  <div style={{ position: "relative", display: "inline-block", marginBottom: 6 }}>
+                    <h1 style={{ fontSize: 42, fontWeight: 700, letterSpacing: -1, color: "#fff", lineHeight: 1.15, margin: 0 }}>
+                      AI-Powered{" "}
+                      <span style={{ color: "#00ff41", textShadow: "0 0 30px rgba(0,255,65,0.4), 0 0 60px rgba(0,255,65,0.15)" }}>Intrusion</span>
+                      <br />Detection System
+                    </h1>
+                    {/* Bottom accent scan line */}
+                    <div style={{ position: "relative", height: 2, marginTop: 6, background: "rgba(0,255,65,0.06)", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, transparent, #00ff41, #0047ab, transparent)", animation: "scan 4s linear infinite" }} />
+                    </div>
+                  </div>
+
+                  {/* 2c — Subtitle */}
+                  <p style={{ fontSize: 12, letterSpacing: 2, color: "rgba(255,255,255,0.35)", marginTop: 18, margin: "18px 0 22px" }}>
+                    IsolationForest v2 · Gemini SOC Analysis · Real-Time Geo-Intelligence
+                  </p>
+
+                  {/* 2d — Stat pills */}
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                    {[
+                      { val: "10s", label: "SOC REPORT", color: "#00ff41", delay: "0ms" },
+                      { val: "7", label: "ML FEATURES", color: "#0047ab", delay: "80ms" },
+                      { val: "₹0", label: "COST", color: "#ffd700", delay: "160ms" },
+                      { val: "L1+L2", label: "TIERS AUTO", color: "#ff6b35", delay: "240ms" },
+                    ].map(chip => (
+                      <div key={chip.label} style={{ padding: "5px 14px", border: `1px solid ${chip.color}28`, background: `${chip.color}08`, animation: `fadeIn 0.4s ease ${chip.delay} both` }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: chip.color }}>{chip.val}</div>
+                        <div style={{ fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,0.35)" }}>{chip.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Section 3 — Upload Card ─────────────────────────────── */}
+                <div style={{ position: "relative", border: "1px solid rgba(0,255,65,0.25)", background: "rgba(0,0,0,0.6)", padding: "36px 40px", textAlign: "center", marginBottom: 20, transition: "border-color 0.2s, background 0.2s" }}
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = "rgba(0,255,65,0.7)"; e.currentTarget.style.background = "rgba(0,255,65,0.04)" }}
+                  onDragLeave={e => { e.currentTarget.style.borderColor = "rgba(0,255,65,0.25)"; e.currentTarget.style.background = "rgba(0,0,0,0.6)" }}
+                  onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = "rgba(0,255,65,0.25)"; e.currentTarget.style.background = "rgba(0,0,0,0.6)"; handleFileSelect(e.dataTransfer.files[0] ?? null) }}>
+
+                  {/* 3a — Scanline overlay */}
+                  <div style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", background: "repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,255,65,0.012) 3px, rgba(0,255,65,0.012) 4px)" }} />
+
+                  {/* 3c — Corner accents */}
+                  {([{ top: 0, left: 0 }, { top: 0, right: 0 }, { bottom: 0, left: 0 }, { bottom: 0, right: 0 }] as React.CSSProperties[]).map((pos, i) => (
+                    <div key={i} style={{ position: "absolute", ...pos, width: 20, height: 20, borderTop: i < 2 ? "2px solid #00ff41" : "none", borderBottom: i >= 2 ? "2px solid #00ff41" : "none", borderLeft: i % 2 === 0 ? "2px solid #00ff41" : "none", borderRight: i % 2 === 1 ? "2px solid #00ff41" : "none", zIndex: 3 }} />
                   ))}
-                  <div style={{ fontSize: 44, marginBottom: 16, filter: "drop-shadow(0 0 10px rgba(0,255,65,0.25))" }}>
-                    {file ? (isPcap(file) ? "📡" : "📄") : "📂"}
-                  </div>
-                  <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 8 }}>
-                    {file ? <><span style={{ color: isPcap(file) ? "#0047ab" : "#00ff41" }}>{file.name}</span>{isPcap(file) ? " — PCAP ready" : " — CSV ready"}</> : <>Drop <code style={{ color: "#00ff41" }}>.csv</code> or <code style={{ color: "#0047ab" }}>.pcap</code></>}
-                  </div>
-                  <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 20 }}>
-                    <label style={{ padding: "9px 20px", border: "1px solid rgba(0,255,65,0.3)", cursor: "pointer", fontSize: 12, letterSpacing: 1, transition: "background 0.2s" }}
-                      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.06)")}
-                      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}>
-                      SELECT_FILE
-                      <input ref={fileRef} type="file" accept=".csv,.pcap,.pcapng" style={{ display: "none" }} onChange={e => handleFileSelect(e.target.files?.[0] ?? null)} />
-                    </label>
-                    <button onClick={runAnalysis} disabled={!file || loading} style={{ padding: "9px 24px", border: `1px solid ${file && !loading ? "rgba(0,255,65,0.6)" : "rgba(255,255,255,0.08)"}`, background: file && !loading ? "rgba(0,255,65,0.08)" : "transparent", color: file && !loading ? "#00ff41" : "rgba(255,255,255,0.15)", cursor: file && !loading ? "pointer" : "not-allowed", fontSize: 12, letterSpacing: 1, fontFamily: "inherit", transition: "all 0.2s" }}>
-                      ▶ {file && isPcap(file) ? "PARSE_PCAP" : "RUN_ANALYSIS"}
-                    </button>
-                    <button onClick={() => startLiveStream(1)} style={{ padding: "9px 24px", border: "1px solid rgba(255,45,85,0.4)", background: "rgba(255,45,85,0.05)", color: "#ff2d55", cursor: "pointer", fontSize: 12, letterSpacing: 1, fontFamily: "inherit", animation: "critPulse 3s ease-in-out infinite" }}>
-                      ● LIVE_MONITOR
-                    </button>
-                  </div>
+
+                  {/* 3d — Background concentric circles */}
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 300, height: 300, border: "1px solid rgba(0,255,65,0.04)", borderRadius: "50%", pointerEvents: "none", zIndex: 1 }} />
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 180, height: 180, border: "1px solid rgba(0,255,65,0.06)", borderRadius: "50%", pointerEvents: "none", zIndex: 1 }} />
+
+                  {/* 3e — Default state (no file) */}
+                  {!file && (
+                    <div style={{ position: "relative", zIndex: 4 }}>
+                      {/* i. Animated SVG Shield */}
+                      <div style={{ display: "inline-block", position: "relative", marginBottom: 16 }}>
+                        {/* Orbit ring */}
+                        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 90, height: 90, border: "1px dashed rgba(0,255,65,0.12)", borderRadius: "50%", pointerEvents: "none" }} />
+                        <svg width="64" height="72" viewBox="0 0 64 72" style={{ filter: "drop-shadow(0 0 16px rgba(0,255,65,0.35))" }}>
+                          <path d="M32 4 L58 16 L58 36 C58 52 44 64 32 68 C20 64 6 52 6 36 L6 16 Z" fill="rgba(0,255,65,0.04)" stroke="#00ff41" strokeWidth="1.5" />
+                          <path d="M32 12 L52 21 L52 36 C52 48 42 57 32 61 C22 57 12 48 12 36 L12 21 Z" fill="none" stroke="rgba(0,255,65,0.25)" strokeWidth="1" />
+                          <circle cx="32" cy="36" r="10" fill="rgba(0,255,65,0.08)" stroke="#00ff41" strokeWidth="1.5" style={{ animation: "nodePulse 2s infinite" }} />
+                          <path d="M27 36 L31 40 L38 32" fill="none" stroke="#00ff41" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+
+                      {/* ii. Instruction text */}
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>
+                        Drop your firewall log or Wireshark capture
+                      </div>
+                      <div style={{ fontSize: 10, marginBottom: 22, letterSpacing: 1 }}>
+                        <span style={{ color: "#00ff41" }}>SUPPORTS:</span>{" "}
+                        <span style={{ color: "#00ff41" }}>.CSV</span>
+                        <span style={{ color: "rgba(255,255,255,0.3)" }}> · </span>
+                        <span style={{ color: "#0047ab" }}>.PCAP</span>
+                        <span style={{ color: "rgba(255,255,255,0.3)" }}> · </span>
+                        <span style={{ color: "#0047ab" }}>.PCAPNG</span>
+                      </div>
+
+                      {/* iii & iv — Buttons (no file selected) */}
+                      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                        <label id="select-file-btn" style={{ padding: "11px 28px", border: "1px solid rgba(0,255,65,0.4)", color: "#00ff41", background: "rgba(0,255,65,0.04)", cursor: "pointer", fontSize: 12, fontWeight: 700, letterSpacing: 2, transition: "all 0.2s" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.10)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,255,65,0.8)" }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,255,65,0.4)" }}>
+                          ↑ SELECT_FILE
+                          <input ref={fileRef} type="file" accept=".csv,.pcap,.pcapng" style={{ display: "none" }} onChange={e => handleFileSelect(e.target.files?.[0] ?? null)} />
+                        </label>
+                        <button id="live-monitor-btn" onClick={() => startLiveStream(1)} style={{ padding: "11px 28px", border: "1px solid rgba(255,45,85,0.5)", background: "rgba(255,45,85,0.05)", color: "#ff2d55", cursor: "pointer", fontSize: 12, fontWeight: 700, letterSpacing: 2, fontFamily: "inherit", animation: "critPulse 3s ease-in-out infinite", transition: "all 0.2s" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,45,85,0.14)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,45,85,0.9)" }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,45,85,0.05)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,45,85,0.5)" }}>
+                          ● LIVE_MONITOR
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3f — File selected state */}
+                  {file && (
+                    <div style={{ position: "relative", zIndex: 4, animation: "fadeIn 0.3s ease" }}>
+                      {/* i. File type emoji */}
+                      <div style={{ fontSize: 36, marginBottom: 12, animation: "fadeIn 0.3s ease" }}>
+                        {isPcap(file) ? "📡" : "📄"}
+                      </div>
+
+                      {/* ii. Filename */}
+                      <div style={{ fontSize: 15, fontWeight: 700, color: isPcap(file) ? "#0047ab" : "#00ff41", letterSpacing: 1, marginBottom: 6 }}>
+                        {file.name}
+                      </div>
+
+                      {/* iii. File metadata */}
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: 2, marginBottom: 10 }}>
+                        {Math.round(file.size / 1024)} KB · {isPcap(file) ? "PCAP CAPTURE" : "CSV LOG FILE"}
+                      </div>
+
+                      {/* iv. Ready badge */}
+                      <div style={{ display: "inline-block", padding: "2px 12px", border: `1px solid ${isPcap(file) ? "#0047ab55" : "#00ff4155"}`, color: isPcap(file) ? "#0047ab" : "#00ff41", fontSize: 10, letterSpacing: 1, marginBottom: 20, animation: "nodePulse 2s infinite" }}>
+                        ● READY TO ANALYZE
+                      </div>
+
+                      {/* v & vi — Action buttons */}
+                      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                        <label id="change-file-btn" style={{ padding: "9px 20px", border: "1px solid rgba(0,255,65,0.2)", color: "rgba(255,255,255,0.6)", background: "transparent", cursor: "pointer", fontSize: 12, letterSpacing: 2, fontWeight: 700, transition: "all 0.2s" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.05)"; (e.currentTarget as HTMLElement).style.color = "#00ff41" }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)" }}>
+                          ↺ CHANGE_FILE
+                          <input type="file" accept=".csv,.pcap,.pcapng" style={{ display: "none" }} onChange={e => handleFileSelect(e.target.files?.[0] ?? null)} />
+                        </label>
+                        <button id="run-analysis-btn" onClick={runAnalysis} disabled={!file || loading} style={{ padding: "10px 32px", border: "2px solid #00ff41", background: "rgba(0,255,65,0.1)", color: "#00ff41", cursor: "pointer", fontSize: 12, fontWeight: 700, letterSpacing: 2, fontFamily: "inherit", boxShadow: "0 0 20px rgba(0,255,65,0.15), inset 0 0 20px rgba(0,255,65,0.04)", transition: "all 0.2s" }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.18)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(0,255,65,0.3), inset 0 0 20px rgba(0,255,65,0.08)" }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(0,255,65,0.1)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(0,255,65,0.15), inset 0 0 20px rgba(0,255,65,0.04)" }}>
+                          ▶ {isPcap(file) ? "PARSE_PCAP" : "RUN_ANALYSIS"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontSize: 10, opacity: 0.25, lineHeight: 2.2 }}>
-                  <div>CSV_COLS: src_ip · port · packet_rate · packet_size</div>
-                  <div>PCAP: Wireshark / tcpdump capture (.pcap / .pcapng)</div>
-                  <div>MODEL: IsolationForest · 200 estimators · 7 features</div>
-                  <div>AI_LAYER: Gemini-1.5-flash SOC reports on high/critical</div>
+
+                {/* ── Section 4 — Feature Cards ───────────────────────────── */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+                  {[
+                    { icon: "⬡", title: "MITRE ATT&CK", desc: "Auto-mapped to attack framework with tactic & technique IDs", color: "#00ff41", delay: "100ms" },
+                    { icon: "◈", title: "GEO-INTEL", desc: "Source IP geolocation — country, city, ISP per threat event", color: "#0047ab", delay: "180ms" },
+                    { icon: "▶", title: "SOC REPORTS", desc: "AI-generated PDF incident reports in under 10 seconds", color: "#ff6b35", delay: "260ms" },
+                  ].map(card => (
+                    <div key={card.title} style={{ padding: "14px 16px", border: `1px solid ${card.color}20`, background: `${card.color}04`, animation: `fadeIn 0.4s ease ${card.delay} both`, transition: "border-color 0.2s, background 0.2s", cursor: "default" }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${card.color}45`; (e.currentTarget as HTMLElement).style.background = `${card.color}08` }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = `${card.color}20`; (e.currentTarget as HTMLElement).style.background = `${card.color}04` }}>
+                      <div style={{ fontSize: 16, color: card.color, marginBottom: 6 }}>{card.icon}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, color: card.color, marginBottom: 5 }}>{card.title}</div>
+                      <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", lineHeight: 1.8 }}>{card.desc}</div>
+                    </div>
+                  ))}
                 </div>
+
+                {/* ── Section 5 — Spec Strip ──────────────────────────────── */}
+                <div style={{ borderTop: "1px solid rgba(0,255,65,0.08)", borderBottom: "1px solid rgba(0,255,65,0.08)", padding: "12px 0", display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
+                  {[
+                    { label: "CSV_COLS", val: "src_ip · port · packet_rate · packet_size" },
+                    { label: "MODEL", val: "IsolationForest · 200 est" },
+                    { label: "AI_LAYER", val: "Gemini-1.5-flash" },
+                  ].map(s => (
+                    <span key={s.label} style={{ fontSize: 10, whiteSpace: "nowrap" }}>
+                      <span style={{ color: "rgba(0,71,171,0.7)", letterSpacing: 1.5 }}>{s.label}:</span>{" "}
+                      <span style={{ color: "rgba(255,255,255,0.25)", letterSpacing: 0.5 }}>{s.val}</span>
+                    </span>
+                  ))}
+                </div>
+
               </div>
             )}
 
@@ -886,10 +1187,10 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
             {isPcapSession && summary && (
               <div style={{ width: "100%", maxWidth: 680, marginBottom: 24, display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {[
-                  { label: "PACKETS",    val: summary.total_packets?.toLocaleString() ?? "—" },
-                  { label: "HOSTS",      val: summary.unique_hosts ?? "—" },
-                  { label: "DURATION",   val: summary.capture_window ? `${summary.capture_window.toFixed(1)}s` : "—" },
-                  { label: "THREAT_RATE",val: `${summary.threat_rate}%` },
+                  { label: "PACKETS", val: summary.total_packets?.toLocaleString() ?? "—" },
+                  { label: "HOSTS", val: summary.unique_hosts ?? "—" },
+                  { label: "DURATION", val: summary.capture_window ? `${summary.capture_window.toFixed(1)}s` : "—" },
+                  { label: "THREAT_RATE", val: `${summary.threat_rate}%` },
                 ].map(s => (
                   <div key={s.label} style={{ flex: 1, minWidth: 110, padding: "10px 14px", border: "1px solid rgba(0,71,171,0.2)", background: "rgba(0,71,171,0.04)" }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#0047ab" }}>{s.val}</div>
@@ -910,9 +1211,9 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
                     const left = i % 2 === 0
 
                     const labelBox = (
-                      <div style={{ animation: `fadeIn 0.3s ease ${Math.min(i*0.04,0.5)}s both` }}>
+                      <div style={{ animation: `fadeIn 0.3s ease ${Math.min(i * 0.04, 0.5)}s both` }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, flexDirection: left ? "row-reverse" : "row" }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color, textShadow: isCrit ? `0 0 8px ${cfg.color}` : "none" }}>{r.prediction.toUpperCase().replace(/ /g,"_")}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: cfg.color, textShadow: isCrit ? `0 0 8px ${cfg.color}` : "none" }}>{r.prediction.toUpperCase().replace(/ /g, "_")}</span>
                           <DataSourceBadge source={r.data_source} />
                         </div>
                         <div style={{ fontSize: 10, opacity: 0.4, marginTop: 2 }}>{String(r.log.src_ip)}</div>
@@ -931,7 +1232,7 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
                     )
 
                     const infoBox = (
-                      <div onClick={() => setExpanded(isOpen ? null : i)} style={{ padding: "10px 12px", border: `1px solid ${isOpen ? cfg.color : "rgba(0,255,65,0.12)"}`, background: isOpen ? `${cfg.color}0a` : "rgba(0,255,65,0.01)", fontSize: 10, lineHeight: 1.8, cursor: r.ai_explanation ? "pointer" : "default", transition: "all 0.2s", animation: `fadeIn 0.3s ease ${Math.min(i*0.04,0.5)}s both` }}>
+                      <div onClick={() => setExpanded(isOpen ? null : i)} style={{ padding: "10px 12px", border: `1px solid ${isOpen ? cfg.color : "rgba(0,255,65,0.12)"}`, background: isOpen ? `${cfg.color}0a` : "rgba(0,255,65,0.01)", fontSize: 10, lineHeight: 1.8, cursor: r.ai_explanation ? "pointer" : "default", transition: "all 0.2s", animation: `fadeIn 0.3s ease ${Math.min(i * 0.04, 0.5)}s both` }}>
                         <span style={{ color: "#0047ab", fontWeight: 700 }}>THREAT_LVL:</span> {cfg.label}<br />
                         <span style={{ color: "#0047ab", fontWeight: 700 }}>SCORE:</span> {r.anomaly_score.toFixed(4)}<br />
                         <span style={{ color: "#0047ab", fontWeight: 700 }}>CONF:</span> {r.confidence}%
@@ -988,8 +1289,18 @@ td{padding:5px 10px;border-bottom:1px solid #ddd;font-size:11px}
       <footer style={{ flexShrink: 0, position: "relative", zIndex: 10 }}>
         {suggestions.length > 0 && (
           <div style={{ position: "absolute", bottom: 76, left: 48, right: 200, background: "#000", border: "1px solid rgba(0,255,65,0.22)", padding: "4px 0", fontSize: 11, zIndex: 10 }}>
+            {/* Header with close button */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 16px 4px 16px", borderBottom: "1px solid rgba(0,255,65,0.1)", marginBottom: 2 }}>
+              <span style={{ fontSize: 9, opacity: 0.3, letterSpacing: 1.5 }}>AUTOCOMPLETE</span>
+              <span
+                onClick={() => setSugg([])}
+                style={{ cursor: "pointer", color: "#00ff41", opacity: 0.5, fontSize: 13, lineHeight: 1, padding: "0 2px" }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
+              >✕</span>
+            </div>
             {suggestions.map(s => (
-              <div key={s} onClick={() => setCmd(s)} style={{ padding: "5px 16px", cursor: "pointer", opacity: 0.8 }}
+              <div key={s} onClick={() => { setCmd(s); setSugg([]) }} style={{ padding: "5px 16px", cursor: "pointer", opacity: 0.8 }}
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,255,65,0.06)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>{s}</div>
             ))}

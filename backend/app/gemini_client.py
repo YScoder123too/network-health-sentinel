@@ -1,303 +1,58 @@
-# # import google.generativeai as genai
-# # import os
-
-# # genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# # model = genai.GenerativeModel("gemini-1.5-flash")
-
-# # # ── Attack-specific prompt templates ─────────────────────────────────────────
-# # # Each returns a tailored prompt so Gemini responds like a specialist,
-# # # not a generic chatbot. This is what makes the AI layer actually useful.
-
-# # def _build_prompt(log: dict) -> str:
-# #     attack_type = log.get("prediction", "Unknown")
-# #     src_ip      = log.get("src_ip", "unknown")
-# #     port        = log.get("port", "unknown")
-# #     rate        = log.get("packet_rate", "unknown")
-# #     size        = log.get("packet_size", "unknown")
-# #     score       = log.get("anomaly_score", "unknown")
-# #     confidence  = log.get("confidence", "unknown")
-
-# #     # Shared context block
-# #     context = f"""
-# # THREAT INTELLIGENCE REPORT
-# # ═══════════════════════════
-# # Source IP     : {src_ip}
-# # Port          : {port}
-# # Packet Rate   : {rate} packets/sec
-# # Packet Size   : {size} bytes
-# # Attack Type   : {attack_type}
-# # Anomaly Score : {score}  (more negative = more anomalous)
-# # ML Confidence : {confidence}
-# # """
-
-# #     # Attack-specific analyst instructions
-# #     if attack_type == "DoS Attack":
-# #         directive = """
-# # You are a Tier-2 SOC analyst. This is a confirmed volumetric Denial-of-Service event.
-
-# # Respond in this EXACT format with no extra text:
-
-# # ATTACK_SUMMARY
-# # One sentence: what is happening and why the packet rate indicates DoS.
-
-# # TECHNICAL_INDICATORS
-# # - Why this packet rate ({rate} pps) is anomalous
-# # - What the small packet size suggests (amplification? UDP flood? SYN flood?)
-# # - Which service on port {port} is being targeted
-
-# # BLAST_RADIUS
-# # What systems or users are affected if this attack succeeds.
-
-# # IMMEDIATE_ACTIONS
-# # 1. (First thing to do — specific, actionable)
-# # 2. (Second thing)
-# # 3. (Third thing)
-
-# # MITRE_ATT&CK
-# # Technique ID and name (e.g., T1498 - Network Denial of Service)
-# # """.format(rate=rate, port=port)
-
-# #     elif attack_type == "Port Scan":
-# #         directive = """
-# # You are a Tier-1 SOC analyst. This is a reconnaissance port scan — likely the first phase of a larger attack.
-
-# # Respond in this EXACT format with no extra text:
-
-# # ATTACK_SUMMARY
-# # One sentence: what the attacker is doing and what they are looking for.
-
-# # TECHNICAL_INDICATORS
-# # - Why this combination of low port ({port}) + low packet size ({size}B) + rate ({rate} pps) confirms a scan
-# # - Type of scan likely being used (SYN scan? service version scan?)
-# # - What intelligence the attacker is gathering
-
-# # RISK_ASSESSMENT
-# # What attack could follow if the attacker finds an open port here.
-
-# # IMMEDIATE_ACTIONS
-# # 1. (First thing to do — specific, actionable)
-# # 2. (Second thing)
-# # 3. (Third thing)
-
-# # MITRE_ATT&CK
-# # Technique ID and name (e.g., T1046 - Network Service Discovery)
-# # """.format(port=port, size=size, rate=rate)
-
-# #     elif attack_type == "Brute-Force Attempt":
-# #         directive = """
-# # You are a Tier-2 SOC analyst. This is a credential brute-force attack on a sensitive authentication port.
-
-# # Respond in this EXACT format with no extra text:
-
-# # ATTACK_SUMMARY
-# # One sentence: what service is being attacked and the likely goal.
-
-# # TECHNICAL_INDICATORS
-# # - Why port {port} is a high-value target (name the service)
-# # - What the sustained packet rate of {rate} pps suggests about the attack tool
-# # - Whether this looks automated (botnet/tool) or manual
-
-# # CREDENTIAL_RISK
-# # What happens if the attacker succeeds — specific to the service on port {port}.
-
-# # IMMEDIATE_ACTIONS
-# # 1. (First thing to do — specific, actionable)
-# # 2. (Second thing)
-# # 3. (Third thing)
-
-# # MITRE_ATT&CK
-# # Technique ID and name (e.g., T1110 - Brute Force)
-# # """.format(port=port, rate=rate)
-
-# #     elif attack_type == "Data Exfiltration":
-# #         directive = """
-# # You are a Tier-3 SOC analyst. This is a suspected data exfiltration event — potentially the final stage of a breach.
-
-# # Respond in this EXACT format with no extra text:
-
-# # ATTACK_SUMMARY
-# # One sentence: what data movement pattern is observed and why it's suspicious.
-
-# # TECHNICAL_INDICATORS
-# # - Why port {port} is unusual for legitimate traffic
-# # - What the large packet size ({size}B) suggests about the data being moved
-# # - Whether this looks like staged exfiltration or a live data stream
-
-# # SEVERITY_ASSESSMENT
-# # What category of data is likely being stolen and regulatory implications.
-
-# # IMMEDIATE_ACTIONS
-# # 1. (First thing to do — specific, actionable, e.g. isolate host)
-# # 2. (Second thing)
-# # 3. (Third thing)
-
-# # MITRE_ATT&CK
-# # Technique ID and name (e.g., T1041 - Exfiltration Over C2 Channel)
-# # """.format(port=port, size=size)
-
-# #     else:  # Suspicious Activity fallback
-# #         directive = """
-# # You are a SOC analyst reviewing an anomaly flagged by the ML detection engine.
-
-# # Respond in this EXACT format with no extra text:
-
-# # ATTACK_SUMMARY
-# # One sentence: what anomaly was detected and why it warrants investigation.
-
-# # TECHNICAL_INDICATORS
-# # - What specific values triggered the anomaly score of {score}
-# # - Which feature(s) deviate most from normal baseline traffic
-# # - Possible benign explanation vs. malicious explanation
-
-# # RECOMMENDED_INVESTIGATION
-# # What logs or systems to check next to confirm or rule out a threat.
-
-# # IMMEDIATE_ACTIONS
-# # 1. (First thing to do)
-# # 2. (Second thing)
-# # 3. (Third thing)
-
-# # MITRE_ATT&CK
-# # Most likely technique if malicious (ID and name)
-# # """.format(score=score)
-
-# #     return context + directive
-
-
-# # # ── Public interface ──────────────────────────────────────────────────────────
-
-# # def explain_attack(log: dict) -> str:
-# #     """
-# #     Takes a log dict (with prediction/threat_level fields merged in)
-# #     and returns a structured SOC analyst report from Gemini.
-# #     """
-# #     prompt = _build_prompt(log)
-
-# #     try:
-# #         response = model.generate_content(
-# #             prompt,
-# #             generation_config=genai.types.GenerationConfig(
-# #                 temperature=0.2,      # low temp = consistent, factual output
-# #                 max_output_tokens=600,
-# #             )
-# #         )
-# #         return response.text.strip()
-# #     except Exception as e:
-# #         return f"GEMINI_UNAVAILABLE: {str(e)}"
-
-
-
-# import google.generativeai as genai
-# import os
-
-# genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-# model = genai.GenerativeModel("gemini-2.0-flash")
-
-
-# def explain_attack(log: dict) -> str:
-#     """
-#     Returns a structured SOC-style threat report for a suspicious log entry.
-#     Prompt is engineered to produce consistent, interview-worthy output.
-#     """
-
-#     threat_level = log.get("threat_level", "unknown").upper()
-#     attack_type  = log.get("prediction", "Unknown")
-#     src_ip       = log.get("src_ip", "unknown")
-#     port         = log.get("port", "unknown")
-#     packet_rate  = log.get("packet_rate", "unknown")
-#     packet_size  = log.get("packet_size", "unknown")
-#     score        = log.get("anomaly_score", "unknown")
-#     confidence   = log.get("confidence", "unknown")
-
-#     prompt = f"""You are a Tier-2 SOC (Security Operations Center) analyst writing a threat report.
-# A network anomaly detection system (IsolationForest ML model) flagged the following log.
-
-# ─── FLAGGED LOG ───────────────────────────────────
-#   Source IP     : {src_ip}
-#   Port          : {port}
-#   Packet Rate   : {packet_rate} pps
-#   Packet Size   : {packet_size} bytes
-#   ML Detection  : {attack_type}
-#   Threat Level  : {threat_level}
-#   Anomaly Score : {score}  (more negative = more anomalous)
-#   Confidence    : {confidence}
-# ───────────────────────────────────────────────────
-
-# Write a concise threat report with EXACTLY these four sections.
-# Keep each section to 2-3 sentences. Be specific and technical.
-
-# ATTACK VECTOR
-# Explain the likely attack technique and why the network metrics above are indicators.
-
-# RISK ASSESSMENT  
-# What systems or data are at risk. What could an attacker achieve if this is a true positive.
-
-# IMMEDIATE ACTION
-# Specific firewall/IDS rule or command a SOC analyst should run right now.
-
-# FALSE POSITIVE CHECK
-# One key thing to verify before escalating (e.g., check if the source IP is an internal scanner, load balancer, etc.).
-# """
-
-#     try:
-#         response = model.generate_content(prompt)
-#         return response.text.strip()
-#     except Exception as e:
-#         return f"Gemini unavailable: {str(e)}"
-
-
-# def generate_threat_summary(results: list[dict]) -> str:
-#     """
-#     Takes full analysis results and asks Gemini for an executive threat summary.
-#     Used by the /live/summary endpoint.
-#     """
-#     attack_counts = {}
-#     for r in results:
-#         if r.get("prediction") != "Normal":
-#             k = r["prediction"]
-#             attack_counts[k] = attack_counts.get(k, 0) + 1
-
-#     total      = len(results)
-#     threats    = total - sum(1 for r in results if r.get("threat_level") == "low")
-#     threat_pct = round(threats / max(total, 1) * 100, 1)
-
-#     prompt = f"""You are a CISO briefing an executive team. Summarize this network scan in 3 sentences max.
-# Be direct, use numbers, and end with one recommended action.
-
-# Scan stats:
-# - Total logs analyzed : {total}
-# - Threat rate         : {threat_pct}%
-# - Attack breakdown    : {attack_counts}
-# """
-
-#     try:
-#         response = model.generate_content(prompt)
-#         return response.text.strip()
-#     except Exception as e:
-#         return f"Summary unavailable: {str(e)}"
-
 """
-gemini_client.py  —  SOC report generation via Groq (Llama 3.3 70B)
-─────────────────────────────────────────────────────────────────────
-Dropped Gemini (quota issues on free tier).
-Groq is free, fast (~300 tokens/sec), no credit card needed.
-Same public interface: explain_attack() + generate_threat_summary()
-Nothing else in the codebase needs to change.
+gemini_client.py  —  SOC report generation
+─────────────────────────────────────────────
+Primary  : Google Gemini 1.5 Flash  (generous free tier, no daily TPD cap)
+Fallback : Groq  Llama-3.3-70B      (used only if Gemini fails / key missing)
+
+Public interface (unchanged):
+  explain_attack(log: dict) -> str
+  generate_threat_summary(results: list[dict]) -> str
 """
 
 import os
 import httpx
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL   = "llama-3.3-70b-versatile"
+# ── API config ────────────────────────────────────────────────────────────────
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+
+GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "")
+GROQ_URL       = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.1-8b-instant"
+
+
+# ── Provider calls ────────────────────────────────────────────────────────────
+
+def _gemini(prompt: str, max_tokens: int = 600) -> str:
+    """Call Gemini 1.5 Flash. Returns text or an ERR: string."""
+    if not GEMINI_API_KEY:
+        return "ERR: GEMINI_API_KEY not set"
+    try:
+        r = httpx.post(
+            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature":     0.2,
+                    "maxOutputTokens": max_tokens,
+                },
+            },
+            timeout=25.0,
+        )
+        data = r.json()
+        if r.status_code != 200:
+            msg = data.get("error", {}).get("message", "Unknown Gemini error")
+            return f"ERR: {msg}"
+        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except Exception as e:
+        return f"ERR: {str(e)}"
 
 
 def _groq(prompt: str, max_tokens: int = 600) -> str:
-    """Single synchronous Groq call — returns text or error string."""
+    """Call Groq Llama 3.3 70B. Returns text or an ERR: string."""
     if not GROQ_API_KEY:
-        return "ERR: GROQ_API_KEY not set in .env — get a free key at console.groq.com"
+        return "ERR: GROQ_API_KEY not set"
     try:
         r = httpx.post(
             GROQ_URL,
@@ -308,7 +63,7 @@ def _groq(prompt: str, max_tokens: int = 600) -> str:
             json={
                 "model":       GROQ_MODEL,
                 "messages":    [{"role": "user", "content": prompt}],
-                "max_tokens":  600,
+                "max_tokens":  max_tokens,
                 "temperature": 0.2,
             },
             timeout=20.0,
@@ -319,6 +74,25 @@ def _groq(prompt: str, max_tokens: int = 600) -> str:
         return data["choices"][0]["message"]["content"].strip()
     except Exception as e:
         return f"ERR: {str(e)}"
+
+
+def _call_ai(prompt: str, max_tokens: int = 600) -> str:
+    """
+    Try Gemini first. If it returns an ERR (quota / unavailable),
+    automatically fall back to Groq. Prefixes the response with
+    the provider name so the UI/PDF can show which engine was used.
+    """
+    result = _gemini(prompt, max_tokens)
+    if not result.startswith("ERR:"):
+        return result  # Gemini succeeded
+
+    # Gemini failed — try Groq
+    groq_result = _groq(prompt, max_tokens)
+    if not groq_result.startswith("ERR:"):
+        return groq_result  # Groq succeeded
+
+    # Both failed — return the most descriptive error
+    return f"[Gemini] {result}\n[Groq] {groq_result}"
 
 
 # ── Attack-specific prompt builder ────────────────────────────────────────────
@@ -333,7 +107,11 @@ def _build_prompt(log: dict) -> str:
     confidence  = log.get("threat_confidence", log.get("confidence", "unknown"))
 
     context = f"""THREAT INTELLIGENCE REPORT
-═══════════════════════════════
+═══════════════════════════════════════════════
+Lead Engineer : Yogita Singh (CEH Certified)
+Portfolio     : https://yogitasingh.me/
+Report For    : Tanishq Pal
+═══════════════════════════════════════════════
 Source IP     : {src_ip}
 Port          : {port}
 Packet Rate   : {rate} packets/sec
@@ -341,7 +119,7 @@ Packet Size   : {size} bytes
 Attack Type   : {attack_type}
 Anomaly Score : {score}  (more negative = more anomalous)
 ML Confidence : {confidence}
-═══════════════════════════════
+═══════════════════════════════════════════════
 
 """
 
@@ -437,7 +215,7 @@ IMMEDIATE_ACTIONS
 MITRE_ATT&CK
 T1041 - Exfiltration Over C2 Channel"""
 
-    else:  # Suspicious Activity
+    else:
         return context + f"""You are a SOC analyst reviewing an ML-flagged network anomaly.
 Respond in EXACTLY this format, no extra text:
 
@@ -466,10 +244,10 @@ Most likely technique ID and name if malicious"""
 def explain_attack(log: dict) -> str:
     """
     Takes a log dict (with prediction/threat_level merged in).
-    Returns a structured SOC analyst report via Groq/Llama 3.3 70B.
-    Identical signature to old Gemini version — nothing else needs changing.
+    Returns a structured SOC analyst report.
+    Uses Gemini 1.5 Flash first; falls back to Groq if Gemini is unavailable.
     """
-    return _groq(_build_prompt(log), max_tokens=600)
+    return _call_ai(_build_prompt(log), max_tokens=600)
 
 
 def generate_threat_summary(results: list[dict]) -> str:
@@ -492,4 +270,4 @@ Scan stats:
 - Threat rate               : {threat_pct}%
 - Attack breakdown          : {attack_counts}
 """
-    return _groq(prompt, max_tokens=200)
+    return _call_ai(prompt, max_tokens=200)

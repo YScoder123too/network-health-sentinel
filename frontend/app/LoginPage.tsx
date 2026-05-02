@@ -1,4 +1,230 @@
-"use client"
+// i havt to do lil changes in my ui, nd try run this at the end,
+//   my requirements are:
+
+// ================================================================
+// NETWORK HEALTH SENTINEL — LANDING PAGE (UPLOAD VIEW) UI OVERHAUL
+// FILE CHANGED: frontend/app/page.tsx
+// ================================================================
+
+// SUMMARY
+// -------
+// The upload/landing screen (activeView === "upload" && !loading block) was
+// completely redesigned. The old UI was a single plain dashed-border box with
+// an emoji icon, two lines of text, and three small buttons. The new UI is a
+// full cinematic hero landing page with multiple visual layers, while keeping
+// 100% of the original logic (file select, drag-drop, runAnalysis, startLiveStream).
+
+
+// ================================================================
+// SECTION 1 — CONTAINER
+// ================================================================
+// - maxWidth increased from 520px → 680px to give more breathing room.
+// - marginTop reduced from 32px → 16px so the hero fills the viewport better.
+// - Entrance animation: fadeIn 0.5s ease (was 0.4s).
+
+
+// ================================================================
+// SECTION 2 — HERO TITLE BLOCK (NEW — did not exist before)
+// ================================================================
+// Added a full title/branding block above the upload card:
+
+//   2a. Decorative horizontal rule
+//       - A flex row: gradient line → centered label text → gradient line.
+//       - Label: "NETWORK HEALTH SENTINEL" in 9px, letterSpacing 3, green tint.
+//       - Lines fade from transparent → rgba(0,255,65,0.3) on each side.
+
+//   2b. Main H1 Headline
+//       - Font size 42px, fontWeight 700, letterSpacing -1, white color.
+//       - Text reads: "AI-Powered Intrusion\nDetection System"
+//       - The word "Intrusion" is highlighted in #00ff41 (green) with a glowing
+//         textShadow: "0 0 30px rgba(0,255,65,0.4), 0 0 60px rgba(0,255,65,0.15)"
+//       - A 2px animated gradient line sits 6px below the headline (bottom accent),
+//         using the existing "scan" keyframe animation (4s linear infinite).
+//         Gradient: transparent → #00ff41 → #0047ab → transparent.
+
+//   2c. Subtitle paragraph
+//       - 12px, letterSpacing 2, rgba(255,255,255,0.35).
+//       - Text: "IsolationForest v2 · Gemini SOC Analysis · Real-Time Geo-Intelligence"
+//       - marginTop 18px.
+
+//   2d. Animated Stat Pills row
+//       Four inline stat chips displayed in a centered flex row, each staggered
+//       with a fadeIn animation delay (0ms, 80ms, 160ms, 240ms):
+//         ┌──────────────────────────────────────────┐
+//         │  10s  SOC REPORT  │  7  ML FEATURES      │
+//         │  ₹0   COST        │  L1+L2  TIERS AUTO   │
+//         └──────────────────────────────────────────┘
+//       Each chip: padding 5px 14px, border 1px solid {color}28, bg {color}08.
+//       Value in 14px bold colored text, label in 9px letterSpacing 1.5 muted.
+//       Colors: green (#00ff41), blue (#0047ab), gold (#ffd700), orange (#ff6b35).
+
+
+// ================================================================
+// SECTION 3 — UPLOAD CARD (redesigned)
+// ================================================================
+
+//   3a. Scanline overlay
+//       A full-cover pseudo-overlay div (position absolute, inset 0, zIndex 2,
+//       pointerEvents none) applies a CSS repeating-linear-gradient scanline
+//       texture: alternating 3px transparent / 1px rgba(0,255,65,0.012) strips.
+//       Gives a subtle CRT / terminal monitor feel to the entire card.
+
+//   3b. Drop zone container
+//       - Removed the old "1px dashed" border.
+//       - New: "1px solid rgba(0,255,65,0.25)", solid not dashed.
+//       - Background: rgba(0,0,0,0.6) — darker, more cinematic.
+//       - Padding: 36px 40px.
+//       - onDragOver: border snaps to rgba(0,255,65,0.7), bg → rgba(0,255,65,0.04)
+//       - onDragLeave: resets.
+//       - onDrop: calls handleFileSelect with dropped file (NEW — drag-drop now works).
+
+//   3c. Corner accents
+//       Previously: 14×14px hairline corners, 1px, faint.
+//       Now: 20×20px corners, 2px solid #00ff41 — bold, sharp, clearly visible.
+//       All four corners (top-left, top-right, bottom-left, bottom-right).
+
+//   3d. Background concentric circles (NEW)
+//       Two decorative concentric circle divs centered in the card:
+//         - Outer: 300×300px, border 1px solid rgba(0,255,65,0.04), border-radius 50%
+//         - Inner: 180×180px, border 1px solid rgba(0,255,65,0.06), border-radius 50%
+//       Gives a radar/targeting reticle feel behind the content.
+
+//   3e. DEFAULT STATE (no file selected)
+//       Old: plain 📂 emoji + one line of text.
+//       New:
+
+//         i.  Animated SVG Shield icon (64×72px):
+//             - Outer shield path: stroke #00ff41, fill rgba(0,255,65,0.04)
+//             - Inner shield path: stroke rgba(0,255,65,0.25)
+//             - Center circle: stroke #00ff41, fill rgba(0,255,65,0.08),
+//               animated with nodePulse 2s infinite
+//             - Checkmark path inside circle: stroke #00ff41, strokeWidth 1.5
+//             - filter: drop-shadow(0 0 16px rgba(0,255,65,0.35))
+//             - Surrounding orbit ring: 90×90px dashed circle, rgba(0,255,65,0.12)
+
+//         ii. Instruction text:
+//             "Drop your firewall log or Wireshark capture" — 13px, 40% white
+//             "SUPPORTS: .CSV · .PCAP · .PCAPNG" — 10px, colored per format
+
+//         iii. SELECT_FILE button (label):
+//              - padding 11px 28px (was 9px 20px)
+//              - border 1px solid rgba(0,255,65,0.4)
+//              - color #00ff41, background rgba(0,255,65,0.04)
+//              - fontWeight 700, letterSpacing 2
+//              - Hover: bg → rgba(0,255,65,0.10), border → rgba(0,255,65,0.8)
+//              - Text: "↑ SELECT_FILE" (upload arrow prefix added)
+
+//         iv. LIVE_MONITOR button:
+//              - padding 11px 28px (was 9px 24px)
+//              - border 1px solid rgba(255,45,85,0.5) — brighter red
+//              - Hover: bg → rgba(255,45,85,0.14), border → rgba(255,45,85,0.9)
+//              - fontWeight 700, letterSpacing 2
+//              - Still animated with critPulse 3s ease-in-out infinite
+
+//   3f. FILE SELECTED STATE (file !== null)
+//       Old: shows filename + 3 buttons in one row.
+//       New:
+
+//         i.  File type emoji (36px) with fadeIn 0.3s animation.
+
+//         ii. Filename in 15px bold, colored by type (green=CSV, blue=PCAP),
+//             letterSpacing 1.
+
+//         iii. File metadata line: "{X} KB · PCAP CAPTURE / CSV LOG FILE"
+//              10px, rgba(255,255,255,0.3), letterSpacing 2.
+
+//         iv.  "● READY TO ANALYZE" status badge:
+//              Inline-block, padding 2px 12px, border 1px solid {color}55,
+//              animated with nodePulse 2s infinite. Color matches file type.
+
+//         v.   CHANGE_FILE label button:
+//              - Style: muted white text, faint green border.
+//              - Hover: bg → rgba(0,255,65,0.05), text → #00ff41.
+//              - Text: "↺ CHANGE_FILE"
+
+//         vi.  RUN_ANALYSIS / PARSE_PCAP button (primary CTA):
+//              - padding 10px 32px — larger than before.
+//              - border 2px solid #00ff41 — thick, prominent.
+//              - background rgba(0,255,65,0.1)
+//              - boxShadow: "0 0 20px rgba(0,255,65,0.15), inset 0 0 20px rgba(0,255,65,0.04)"
+//              - Hover: bg brighter, shadow intensifies to 0 0 30px rgba(0,255,65,0.3)
+//              - fontWeight 700, letterSpacing 2.
+
+
+// ================================================================
+// SECTION 4 — FEATURE CARDS ROW (NEW — did not exist before)
+// ================================================================
+// A 3-column CSS grid of feature highlight cards below the upload card:
+
+//   Card 1 — MITRE ATT&CK  (color: #00ff41)
+//     Icon: ⬡
+//     Desc: "Auto-mapped to attack framework with tactic & technique IDs"
+
+//   Card 2 — GEO-INTEL  (color: #0047ab)
+//     Icon: ◈
+//     Desc: "Source IP geolocation — country, city, ISP per threat event"
+
+//   Card 3 — SOC REPORTS  (color: #ff6b35)
+//     Icon: ▶
+//     Desc: "AI-generated PDF incident reports in under 10 seconds"
+
+//   Each card:
+//   - padding 14px 16px
+//   - border 1px solid {color}20, bg {color}04
+//   - Staggered fadeIn animations (delay: 100ms, 180ms, 260ms)
+//   - Hover: border → {color}45, bg → {color}08
+//   - Icon: 16px colored, marginBottom 6px
+//   - Title: 10px, fontWeight 700, letterSpacing 2, colored
+//   - Desc: 9px, rgba(255,255,255,0.3), lineHeight 1.8
+
+
+// ================================================================
+// SECTION 5 — SPEC STRIP (redesigned footer row)
+// ================================================================
+// Old: 4 lines of plain 10px opacity-0.25 text stacked vertically.
+// New: A single horizontal flex row with a top and bottom border:
+
+//   - borderTop + borderBottom: 1px solid rgba(0,255,65,0.08)
+//   - padding 12px 0
+//   - Three inline label:value pairs side by side:
+//       CSV_COLS:  src_ip · port · packet_rate · packet_size
+//       MODEL:     IsolationForest · 200 est
+//       AI_LAYER:  Gemini-1.5-flash
+//   - Labels in rgba(0,71,171,0.7) (blue tint), letterSpacing 1.5
+//   - Values in rgba(255,255,255,0.25), letterSpacing 0.5
+//   - flexWrap: wrap for narrow screens
+
+
+// ================================================================
+// WHAT WAS NOT CHANGED (logic fully preserved)
+// ================================================================
+// - fileRef, handleFileSelect, runAnalysis, startLiveStream — all intact.
+// - File input element (accept=".csv,.pcap,.pcapng") — unchanged.
+// - isPcap() check for conditional labels — unchanged.
+// - All existing CSS keyframe animations reused (fadeIn, nodePulse,
+//   critPulse, scan, headerScan, assistantPulse).
+// - All other views (threat_feed, loading, summary, timeline) — unchanged.
+// - Sidebar, header, footer command bar, right panel — unchanged.
+// - ParticleCanvas, NewsPanel, AIAssistant — unchanged.
+
+
+// ================================================================
+// HOW TO APPLY IN VS CODE / CODEX
+// ================================================================
+// Target file:  frontend/app/page.tsx
+
+// Find the block:
+//   {activeView === "upload" && !loading && (
+//     <div style={{ width: "100%", maxWidth: 520, marginTop: 32 ...
+
+// Replace the entire block (ending at the closing </div> before the
+// loading spinner block) with the new hero markup described above.
+
+// The replacement ends just before:
+//   {loading && results.length === 0 && (
+
+// Everything outside the upload block is untouched.
+// ================================================================"use client"
 
 import { useState, useEffect, useRef } from "react"
 
